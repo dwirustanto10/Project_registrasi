@@ -334,32 +334,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
-        .progress-container {
-            display: none;
-            margin: 20px 0;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            border: 1px solid #dee2e6;
-        }
-        .progress {
-            width: 100%;
-            height: 20px;
-            background-color: #e9ecef;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background-color: #4CAF50;
-            transition: width 0.3s ease;
-        }
-        .progress-text {
-            margin-top: 10px;
-            text-align: center;
-            color: #495057;
-        }
         .upload-status {
             margin-top: 10px;
             padding: 10px;
@@ -454,13 +428,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <button type="submit">Upload dan Preview</button>
         </form>
 
-        <div class="progress-container">
-            <div class="progress">
-                <div class="progress-bar"></div>
-            </div>
-            <div class="progress-text">0%</div>
-        </div>
-
         <div class="processing-status"></div>
         <div class="upload-status"></div>
         <div id="preview-container"></div>
@@ -471,28 +438,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             e.preventDefault();
             
             const formData = new FormData(this);
-            const progressContainer = document.querySelector('.progress-container');
-            const progressBar = document.querySelector('.progress-bar');
-            const progressText = document.querySelector('.progress-text');
             const uploadStatus = document.querySelector('.upload-status');
             const processingStatus = document.querySelector('.processing-status');
             const previewContainer = document.getElementById('preview-container');
             
-            progressContainer.style.display = 'block';
             uploadStatus.style.display = 'none';
             processingStatus.style.display = 'none';
             previewContainer.innerHTML = '';
             
             const xhr = new XMLHttpRequest();
-            let isProcessing = false;
-            
-            xhr.upload.addEventListener('progress', function(e) {
-                if (e.lengthComputable) {
-                    const percentComplete = (e.loaded / e.total) * 100;
-                    progressBar.style.width = percentComplete + '%';
-                    progressText.textContent = Math.round(percentComplete) + '%';
-                }
-            });
             
             xhr.addEventListener('load', function() {
                 if (xhr.status === 200) {
@@ -509,6 +463,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             
                             // Tampilkan preview data
                             previewContainer.innerHTML = response.preview;
+                        } else if (response.status === 'processing') {
+                            processingStatus.textContent = response.message;
+                            processingStatus.style.display = 'block';
                         } else {
                             uploadStatus.className = 'upload-status error';
                             uploadStatus.textContent = response.message || 'Terjadi kesalahan saat upload';
@@ -544,35 +501,31 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Mulai polling untuk status pemrosesan
             const checkStatus = setInterval(function() {
-                if (!isProcessing) {
-                    const statusXhr = new XMLHttpRequest();
-                    statusXhr.open('POST', 'upload_handler.php', true);
-                    statusXhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-                    
-                    const statusFormData = new FormData();
-                    statusFormData.append('check_status', '1');
-                    
-                    statusXhr.onload = function() {
-                        if (statusXhr.status === 200) {
-                            try {
-                                const response = JSON.parse(statusXhr.responseText);
-                                if (response.status === 'processing' && response.message) {
-                                    processingStatus.textContent = response.message;
-                                    processingStatus.style.display = 'block';
-                                    progressBar.style.width = '100%';
-                                    progressText.textContent = '100%';
-                                } else {
-                                    clearInterval(checkStatus);
-                                }
-                            } catch (e) {
-                                console.error('Error checking status:', e);
+                const statusXhr = new XMLHttpRequest();
+                statusXhr.open('POST', 'upload_handler.php', true);
+                statusXhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                
+                const statusFormData = new FormData();
+                statusFormData.append('check_status', '1');
+                
+                statusXhr.onload = function() {
+                    if (statusXhr.status === 200) {
+                        try {
+                            const response = JSON.parse(statusXhr.responseText);
+                            if (response.status === 'processing' && response.message) {
+                                processingStatus.textContent = response.message;
+                                processingStatus.style.display = 'block';
+                            } else {
                                 clearInterval(checkStatus);
                             }
+                        } catch (e) {
+                            console.error('Error checking status:', e);
+                            clearInterval(checkStatus);
                         }
-                    };
-                    
-                    statusXhr.send(statusFormData);
-                }
+                    }
+                };
+                
+                statusXhr.send(statusFormData);
             }, 1000); // Cek status setiap 1 detik
         });
     </script>
