@@ -530,6 +530,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         });
     </script>
 </body>
+
+copyright 2025
 </html>
 <?php
 ob_end_flush(); // Akhiri output buffering
