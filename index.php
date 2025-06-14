@@ -531,7 +531,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </script>
 </body>
 
-copyright &copy; 2025 dwikemaren
+copyright &copy; 2025@dwikemaren
 </html>
 <?php
 ob_end_flush(); // Akhiri output buffering
