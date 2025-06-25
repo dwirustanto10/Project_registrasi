@@ -233,28 +233,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $processed_row[9] = ($processed_row[9] == 'Ya') ? 1 : 0;
             $processed_row[10] = ($processed_row[10] == 'Ya') ? 1 : 0;
             
-            // Proses jenis kelamin
-            if ($processed_row[14] !== NULL) {
-                $jenis_kelamin = strtoupper($processed_row[14]);
-                // Cari id jenis kelamin dari referensi
-                $stmt_jenis_kelamin = $conn->prepare("SELECT id FROM ref_jenis_kelamin WHERE nama = ?");
-                $stmt_jenis_kelamin->bind_param("s", $jenis_kelamin);
-                $stmt_jenis_kelamin->execute();
-                $result = $stmt_jenis_kelamin->get_result();
-                if ($row_jenis_kelamin = $result->fetch_assoc()) {
-                    $processed_row[14] = $row_jenis_kelamin['id'];
-                } else {
-                    $error_rows[] = [
-                        'row' => $index + 1,
-                        'reason' => 'Jenis kelamin tidak valid: ' . $jenis_kelamin
-                    ];
-                    continue;
-                }
-                $stmt_jenis_kelamin->close();
-            }
+            // // Proses jenis kelamin
+            // if ($processed_row[14] !== NULL) {
+            //     $jenis_kelamin = strtoupper($processed_row[14]);
+            //     // Cari id jenis kelamin dari referensi
+            //     $stmt_jenis_kelamin = $conn->prepare("SELECT id FROM ref_jenis_kelamin WHERE nama = ?");
+            //     $stmt_jenis_kelamin->bind_param("s", $jenis_kelamin);
+            //     $stmt_jenis_kelamin->execute();
+            //     $result = $stmt_jenis_kelamin->get_result();
+            //     if ($row_jenis_kelamin = $result->fetch_assoc()) {
+            //         $processed_row[14] = $row_jenis_kelamin['id'];
+            //     } else {
+            //         $error_rows[] = [
+            //             'row' => $index + 1,
+            //             'reason' => 'Jenis kelamin tidak valid: ' . $jenis_kelamin
+            //         ];
+            //         continue;
+            //     }
+            //     $stmt_jenis_kelamin->close();
+            // }
             
-            if ($processed_row[37] !== NULL) {
-                $processed_row[37] = strtoupper($processed_row[37]);
+            // if ($processed_row[37] !== NULL) {
+            //     $processed_row[37] = strtoupper($processed_row[37]);
+            // }
+
+            // Pastikan jumlah kolom sesuai dengan database (misal 50 kolom)
+            $jumlah_kolom_db = 50;
+            while (count($processed_row) < $jumlah_kolom_db) {
+                $processed_row[] = NULL;
             }
 
             $types = str_repeat('s', 89);
