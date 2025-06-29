@@ -75,7 +75,7 @@ if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUE
                 }
                 $preview_html .= "</tr>";
                 
-                for ($i = 0; $i < min(5, count($rows)); $i++) {
+                for ($i = 0; $i < min(10, count($rows)); $i++) {
                     $preview_html .= "<tr>";
                     foreach ($rows[$i] as $cell) {
                         $preview_html .= "<td>" . htmlspecialchars($cell ?? '') . "</td>";
@@ -85,8 +85,8 @@ if(isset($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUE
                 $preview_html .= "</table>";
                 $preview_html .= "</div>";
 
-                if (count($rows) > 5) {
-                    $preview_html .= "<p>Menampilkan 5 dari " . count($rows) . " baris data</p>";
+                if (count($rows) > 10) {
+                    $preview_html .= "<p>Menampilkan 10 dari " . count($rows) . " baris data</p>";
                 }
 
                 $preview_html .= "<form method='post' action=''>";
@@ -152,7 +152,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             }
             echo "</tr>";
             
-            for ($i = 0; $i < min(5, count($rows)); $i++) {
+            for ($i = 0; $i < min(10, count($rows)); $i++) {
                 echo "<tr>";
                 foreach ($rows[$i] as $cell) {
                     echo "<td>" . htmlspecialchars($cell ?? '') . "</td>";
@@ -162,8 +162,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             echo "</table>";
             echo "</div>";
 
-            if (count($rows) > 5) {
-                echo "<p>Menampilkan 5 dari " . count($rows) . " baris data</p>";
+            if (count($rows) > 10) {
+                echo "<p>Menampilkan 10 dari " . count($rows) . " baris data</p>";
             }
 
             echo "<form method='post' action=''>";
@@ -232,30 +232,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             $processed_row[9] = ($processed_row[9] == 'Ya') ? 1 : 0;
             $processed_row[10] = ($processed_row[10] == 'Ya') ? 1 : 0;
-            
-            // // Proses jenis kelamin
-            // if ($processed_row[14] !== NULL) {
-            //     $jenis_kelamin = strtoupper($processed_row[14]);
-            //     // Cari id jenis kelamin dari referensi
-            //     $stmt_jenis_kelamin = $conn->prepare("SELECT id FROM ref_jenis_kelamin WHERE nama = ?");
-            //     $stmt_jenis_kelamin->bind_param("s", $jenis_kelamin);
-            //     $stmt_jenis_kelamin->execute();
-            //     $result = $stmt_jenis_kelamin->get_result();
-            //     if ($row_jenis_kelamin = $result->fetch_assoc()) {
-            //         $processed_row[14] = $row_jenis_kelamin['id'];
-            //     } else {
-            //         $error_rows[] = [
-            //             'row' => $index + 1,
-            //             'reason' => 'Jenis kelamin tidak valid: ' . $jenis_kelamin
-            //         ];
-            //         continue;
-            //     }
-            //     $stmt_jenis_kelamin->close();
-            // }
-            
-            // if ($processed_row[37] !== NULL) {
-            //     $processed_row[37] = strtoupper($processed_row[37]);
-            // }
+
 
             // Pastikan jumlah kolom sesuai dengan database (misal 50 kolom)
             $jumlah_kolom_db = 50;
@@ -318,226 +295,133 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Upload Excel ke Database</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f5f5;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .preview-container, .result-container {
-            margin: 20px 0;
-            padding: 20px;
-            background-color: white;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .upload-status {
-            margin-top: 10px;
-            padding: 10px;
-            border-radius: 5px;
-            display: none;
-        }
-        .upload-status.success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .upload-status.error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        .table-responsive {
-            overflow-x: auto;
-            margin: 20px 0;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        th, td {
-            padding: 8px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-        button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .error-container {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #fff3f3;
-            border: 1px solid #ffcdd2;
-            border-radius: 4px;
-        }
-        h3 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        h4 {
-            color: #666;
-            margin-bottom: 15px;
-        }
-        .config-info {
-            background-color: #e8f5e9;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            border: 1px solid #c8e6c9;
-        }
-        .config-info h3 {
-            margin-top: 0;
-            color: #2e7d32;
-        }
-        .config-info p {
-            margin: 5px 0;
-            color: #1b5e20;
-        }
-        .processing-status {
-            display: none;
-            margin-top: 10px;
-            padding: 10px;
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-            border-radius: 5px;
-        }
-    </style>
+    <title>Registrasi Mahasiswa - SPA</title>
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
     <div class="container">
-        <h2>Upload File Excel</h2>
-        <form id="uploadForm" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" accept=".xls,.xlsx,.csv" required>
-            <button type="submit">Upload dan Preview</button>
-        </form>
-
-        <div class="processing-status"></div>
-        <div class="upload-status"></div>
-        <div id="preview-container"></div>
+        <nav>
+            <ul>
+                <li><a href="#" data-page="upload" class="active">Upload Data</a></li>
+                <li><a href="#" data-page="tampil">Tampil Data</a></li>
+            </ul>
+        </nav>
+        <div id="main-content"></div>
     </div>
-
     <script>
-        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        function setActiveMenu(page) {
+            document.querySelectorAll('nav a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('data-page') === page) link.classList.add('active');
+            });
+        }
+        function loadPage(page) {
+            setActiveMenu(page);
+            let url = '';
+            if (page === 'upload') url = 'upload_form.html';
+            if (page === 'tampil') {
+                loadTampilData(1);
+                return;
+            }
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('main-content').innerHTML = html;
+                    if (page === 'upload') initUploadForm();
+                });
+        }
+        
+        // Fungsi AJAX untuk pagination tampil data
+        function loadTampilData(page = 1) {
+            fetch('tampil_data.php?page=' + page)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('main-content').innerHTML = html;
+                });
+        }
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
             e.preventDefault();
-            
-            const formData = new FormData(this);
-            const uploadStatus = document.querySelector('.upload-status');
-            const processingStatus = document.querySelector('.processing-status');
+                const page = this.getAttribute('data-page');
+                loadPage(page);
+            });
+        });
+        // SPA: load default page
+        loadPage('upload');
+
+        // Inisialisasi upload form (AJAX)
+        function initUploadForm() {
+            const uploadForm = document.getElementById('uploadForm');
+            if (!uploadForm) return;
+            const uploadStatus = document.getElementById('upload-status');
             const previewContainer = document.getElementById('preview-container');
-            
             uploadStatus.style.display = 'none';
-            processingStatus.style.display = 'none';
             previewContainer.innerHTML = '';
-            
-            const xhr = new XMLHttpRequest();
-            
-            xhr.addEventListener('load', function() {
-                if (xhr.status === 200) {
-                    try {
-                        console.log('Response:', xhr.responseText);
-                        const response = JSON.parse(xhr.responseText);
-                        console.log('Parsed response:', response);
-                        
-                        if (response.status === 'success') {
-                            uploadStatus.className = 'upload-status success';
-                            uploadStatus.textContent = 'Upload berhasil!';
-                            uploadStatus.style.display = 'block';
-                            processingStatus.style.display = 'none';
-                            
-                            // Tampilkan preview data
-                            previewContainer.innerHTML = response.preview;
-                        } else if (response.status === 'processing') {
-                            processingStatus.textContent = response.message;
-                            processingStatus.style.display = 'block';
-                        } else {
-                            uploadStatus.className = 'upload-status error';
-                            uploadStatus.textContent = response.message || 'Terjadi kesalahan saat upload';
-                            uploadStatus.style.display = 'block';
-                            processingStatus.style.display = 'none';
-                        }
-                    } catch (e) {
-                        console.error('Error parsing response:', e);
-                        uploadStatus.className = 'upload-status error';
-                        uploadStatus.textContent = 'Terjadi kesalahan saat memproses response: ' + e.message;
-                        uploadStatus.style.display = 'block';
-                        processingStatus.style.display = 'none';
-                    }
+            uploadForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+            uploadStatus.style.display = 'none';
+            previewContainer.innerHTML = '';
+            fetch('upload_handler.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    uploadStatus.className = 'upload-status success';
+                    uploadStatus.textContent = 'Upload berhasil!';
+                    uploadStatus.style.display = 'block';
+                    previewContainer.innerHTML = data.preview;
                 } else {
                     uploadStatus.className = 'upload-status error';
-                    uploadStatus.textContent = 'Upload gagal: ' + xhr.statusText;
+                    uploadStatus.textContent = data.message || 'Terjadi kesalahan saat upload';
                     uploadStatus.style.display = 'block';
-                    processingStatus.style.display = 'none';
                 }
-            });
-            
-            xhr.addEventListener('error', function() {
-                console.error('XHR Error');
+            })
+            .catch(err => {
                 uploadStatus.className = 'upload-status error';
-                uploadStatus.textContent = 'Terjadi kesalahan saat upload';
+                uploadStatus.textContent = 'Terjadi error: ' + err;
                 uploadStatus.style.display = 'block';
-                processingStatus.style.display = 'none';
             });
-            
-            xhr.open('POST', 'upload_handler.php', true);
-            xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-            xhr.send(formData);
-
-            // Mulai polling untuk status pemrosesan
-            const checkStatus = setInterval(function() {
-                const statusXhr = new XMLHttpRequest();
-                statusXhr.open('POST', 'upload_handler.php', true);
-                statusXhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-                
-                const statusFormData = new FormData();
-                statusFormData.append('check_status', '1');
-                
-                statusXhr.onload = function() {
-                    if (statusXhr.status === 200) {
-                        try {
-                            const response = JSON.parse(statusXhr.responseText);
-                            if (response.status === 'processing' && response.message) {
-                                processingStatus.textContent = response.message;
-                                processingStatus.style.display = 'block';
-                            } else {
-                                clearInterval(checkStatus);
-                            }
-                        } catch (e) {
-                            console.error('Error checking status:', e);
-                            clearInterval(checkStatus);
-                        }
-                    }
-                };
-                
-                statusXhr.send(statusFormData);
-            }, 1000); // Cek status setiap 1 detik
         });
+            // Event delegation untuk konfirmasi upload
+            previewContainer.addEventListener('submit', function(e) {
+            if (e.target && e.target.matches('form')) {
+                e.preventDefault();
+                fetch('upload_to_db.php', {
+                    method: 'POST'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    let html = '';
+                    if (data.status === 'success') {
+                        html += `<div class="result-container">
+                            <h3>Hasil Upload</h3>
+                            <p>Total baris dalam file: ${data.total}</p>
+                            <p>Baris berhasil diupload: ${data.success}</p>
+                            <p>Baris gagal diupload: ${data.failed}</p>`;
+                        if (data.errors && data.errors.length > 0) {
+                            html += `<div class="error-container">
+                                <h4>Detail Error:</h4>
+                                <table border="1">
+                                <tr><th>Baris</th><th>Alasan Error</th></tr>`;
+                            data.errors.forEach(err => {
+                                html += `<tr><td>${err.row}</td><td>${err.reason}${err.count ? ' (Jumlah kolom: ' + err.count + ')' : ''}</td></tr>`;
+                            });
+                            html += `</table></div>`;
+                        }
+                        html += `</div>`;
+                    } else {
+                        html = `<div class="upload-status error">${data.message}</div>`;
+                    }
+                        previewContainer.innerHTML = html;
+                });
+            }
+        });
+        }
     </script>
 </body>
-
-copyright &copy; 2025
 </html>
 <?php
 ob_end_flush(); // Akhiri output buffering
