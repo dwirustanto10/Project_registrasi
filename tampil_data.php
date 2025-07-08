@@ -45,28 +45,53 @@ $sql = "SELECT
     rm_nik_ayah AS 'NIK Ayah',
     rm_keluarga_ayah_nama AS 'Nama Ayah',
     rm_keluarga_ayah_tgl_lahir AS 'Tgl Lahir Ayah',
-    rm_keluarga_ayah_pddk AS 'Pendidikan Ayah',
-    rm_keluarga_ayah_pekerjaan AS 'Pekerjaan Ayah',
-    rm_keluarga_ayah_penghasilan AS 'Penghasilan Ayah',
+    -- reg.rm_keluarga_ayah_pddk AS 'Nama Pendidikan Ayah',
+    pendidikan_ayah.kode_pend AS 'Kode Pendidikan Ayah',
+    pekerjaan_ayah.kode_kerja AS 'Kode Pekerjaan Ayah',
+    -- reg.rm_keluarga_ayah_penghasilan AS 'Nominal Penghasilan Ayah',
+    pr_ayah.kode_penghasilan AS 'Kode Penghasilan Ayah',
     rm_nik_ibu AS 'NIK Ibu',
     rm_keluarga_ibu_nama AS 'Nama Ibu',
     rm_keluarga_ibu_tgl_lahir AS 'Tanggal Lahir Ibu',
-    rm_keluarga_ibu_pddk AS 'Pendidikan Ibu',
-    rm_keluarga_ibu_pekerjaan AS 'Pekerjaan Ibu',
-    rm_keluarga_ibu_penghasilan AS 'Penghasilan Ibu',
+    -- reg.rm_keluarga_ibu_pddk AS 'Nama Pendidikan Ibu',
+    pendidikan_ibu.kode_pend AS 'Kode Pendidikan Ibu',
+    pekerjaan_ibu.kode_kerja AS 'Kode Pekerjaan Ibu',
+    -- reg.rm_keluarga_ibu_penghasilan AS 'Nominal Penghasilan Ibu',
+    pr_ibu.kode_penghasilan AS 'Kode Penghasilan Ibu',
     rm_nama_wali AS 'Nama Wali',
     rm_tgl_lahir_wali AS 'Tanggal Lahir Wali',
-    rm_pddk_wali AS 'Pendidikan Wali',
-    rm_pekerjaan_wali AS 'Pekerjaan Wali',
-    rm_penghasilan_wali AS 'Penghasilan Wali',
-    prodi_kode AS 'Kode Prodi',
+    -- reg.rm_pddk_wali AS 'Nama Pendidikan Wali',
+    pendidikan_wali.kode_pend AS 'Kode Pendidikan Wali',
+    pekerjaan_wali.kode_kerja AS 'Kode Pekerjaan Wali',
+    -- reg.rm_penghasilan_wali AS 'Nominal Penghasilan Wali',
+    pr_wali.kode_penghasilan AS 'Kode Penghasilan Wali',
+    prodi.kode_prodi AS 'Kode Prodi',
     rm_jenis_pembiayaan AS 'Jenis Pembiayaan',
     rm_biaya_masuk_kuliah AS 'Biaya Masuk Kuliah',
     rm_asal_perguruan_tinggi AS 'Asal Perguruan Tinggi',
-    rm_asal_program_studi AS 'Asal Program Studi'
+    rm_asal_program_studi AS 'Asal Program Studi',
+    CASE
+        WHEN CHAR_LENGTH(rm_nik) <> 16
+            OR CHAR_LENGTH(rm_nik_ayah) <> 16
+            OR CHAR_LENGTH(rm_nik_ibu) <> 16
+        THEN 'SILAKAN DI CEK DATA NIK'
+        ELSE ''
+    END AS 'Catatan NIK'
 FROM reg
 LEFT JOIN agama ON reg.rm_agama = agama.nama_agama
 LEFT JOIN jalur_daftar ON reg.rm_jalur = jalur_daftar.jalur_masuk
+LEFT JOIN pendidikan AS pendidikan_ayah ON reg.rm_keluarga_ayah_pddk = pendidikan_ayah.nama_pend
+LEFT JOIN pekerjaan AS pekerjaan_ayah ON reg.rm_keluarga_ayah_pekerjaan = pekerjaan_ayah.nama_kerja
+LEFT JOIN pendidikan AS pendidikan_ibu ON reg.rm_keluarga_ibu_pddk = pendidikan_ibu.nama_pend
+LEFT JOIN pekerjaan AS pekerjaan_ibu ON reg.rm_keluarga_ibu_pekerjaan = pekerjaan_ibu.nama_kerja
+LEFT JOIN pendidikan AS pendidikan_wali ON reg.rm_pddk_wali = pendidikan_wali.nama_pend
+LEFT JOIN pekerjaan AS pekerjaan_wali ON reg.rm_pekerjaan_wali = pekerjaan_wali.nama_kerja
+LEFT JOIN penghasilan_ref AS pr_ayah ON reg.rm_keluarga_ayah_penghasilan >= pr_ayah.min_penghasilan AND reg.rm_keluarga_ayah_penghasilan <= pr_ayah.max_penghasilan
+LEFT JOIN penghasilan_ref AS pr_ibu ON reg.rm_keluarga_ibu_penghasilan >= pr_ibu.min_penghasilan AND reg.rm_keluarga_ibu_penghasilan <= pr_ibu.max_penghasilan
+LEFT JOIN penghasilan_ref AS pr_wali ON reg.rm_penghasilan_wali >= pr_wali.min_penghasilan AND reg.rm_penghasilan_wali <= pr_wali.max_penghasilan
+LEFT JOIN prodi ON TRIM(LOWER(reg.prodi_nama)) = TRIM(LOWER(prodi.prodi_nama))
+    AND TRIM(LOWER(reg.prodi_jenjang)) = TRIM(LOWER(prodi.prodi_jenjang))
+
 LIMIT $rows_per_page OFFSET $offset";
 
 $result = $conn->query($sql);
