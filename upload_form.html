@@ -1,7 +1,114 @@
-<h2>Upload File Excel (SPA)</h2>
-<form id="uploadForm" enctype="multipart/form-data">
-  <input type="file" name="file" accept=".xls,.xlsx,.csv" required />
-  <button type="submit">Upload dan Preview</button>
-</form>
-<div id="upload-status" class="upload-status"></div>
-<div id="preview-container"></div>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Upload Data Excel</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+  </head>
+  <body>
+    <div class="upload-container">
+      <h2>📤 Upload Data Excel</h2>
+
+      <!-- Menu Navigasi -->
+      <div class="nav-menu">
+        <a href="index.php" class="nav-link">🏠 Menu Utama</a>
+        <a href="tampil_data.php" class="nav-link">📋 Tampil Data</a>
+        <a href="hapus_data.php" class="nav-link" style="background: #dc3545">🗑️ Hapus Semua Data</a>
+      </div>
+
+      <form id="uploadForm" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="file">Pilih File Excel (.xls, .xlsx, .csv):</label>
+          <input type="file" id="file" name="file" accept=".xls,.xlsx,.csv" required />
+        </div>
+
+        <button type="submit" class="btn-upload">Upload File</button>
+      </form>
+
+      <div id="upload-status" style="display: none"></div>
+      <div id="preview-container"></div>
+    </div>
+
+    <script>
+      // Inisialisasi upload form (AJAX)
+      function initUploadForm() {
+        const uploadForm = document.getElementById('uploadForm');
+        if (!uploadForm) return;
+
+        const uploadStatus = document.getElementById('upload-status');
+        const previewContainer = document.getElementById('preview-container');
+
+        uploadStatus.style.display = 'none';
+        previewContainer.innerHTML = '';
+
+        uploadForm.addEventListener('submit', function (e) {
+          e.preventDefault();
+          const formData = new FormData(this);
+
+          uploadStatus.style.display = 'none';
+          previewContainer.innerHTML = '';
+
+          fetch('upload_handler.php', {
+            method: 'POST',
+            body: formData,
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.status === 'success') {
+                uploadStatus.className = 'upload-status success';
+                uploadStatus.textContent = 'Upload berhasil!';
+                uploadStatus.style.display = 'block';
+                previewContainer.innerHTML = data.preview;
+              } else {
+                uploadStatus.className = 'upload-status error';
+                uploadStatus.textContent = data.message || 'Terjadi kesalahan saat upload';
+                uploadStatus.style.display = 'block';
+              }
+            })
+            .catch((err) => {
+              uploadStatus.className = 'upload-status error';
+              uploadStatus.textContent = 'Terjadi error: ' + err;
+              uploadStatus.style.display = 'block';
+            });
+        });
+
+        // Event delegation untuk konfirmasi upload
+        previewContainer.addEventListener('submit', function (e) {
+          if (e.target && e.target.matches('form')) {
+            e.preventDefault();
+            fetch('upload_to_db.php', {
+              method: 'POST',
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                let html = '';
+                if (data.status === 'success') {
+                  html += `<div class="result-container">
+                                <h3>Hasil Upload</h3>
+                                <p>Total baris dalam file: ${data.total}</p>
+                                <p>Baris berhasil diupload: ${data.success}</p>
+                                <p>Baris gagal diupload: ${data.failed}</p>`;
+                  if (data.errors && data.errors.length > 0) {
+                    html += `<div class="error-container">
+                                    <h4>Detail Error:</h4>
+                                    <table border="1">
+                                    <tr><th>Baris</th><th>Alasan Error</th></tr>`;
+                    data.errors.forEach((err) => {
+                      html += `<tr><td>${err.row}</td><td>${err.reason}${err.count ? ' (Jumlah kolom: ' + err.count + ')' : ''}</td></tr>`;
+                    });
+                    html += `</table></div>`;
+                  }
+                  html += `</div>`;
+                } else {
+                  html = `<div class="upload-status error">${data.message}</div>`;
+                }
+                previewContainer.innerHTML = html;
+              });
+          }
+        });
+      }
+
+      // Inisialisasi saat halaman dimuat
+      initUploadForm();
+    </script>
+  </body>
+</html>
