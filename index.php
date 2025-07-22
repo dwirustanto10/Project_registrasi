@@ -433,14 +433,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <div class="container">
         <nav>
-            <ul>
+            <!-- <ul>
                 <li><a href="#" data-page="upload" class="active">Upload Data</a></li>
                 <li><a href="#" data-page="tampil">Tampil Data</a></li>
-                <!-- <li><a href="hapus_data.php">Hapus Semua Data</a></li> -->
-            </ul>
+                <li><a href="hapus_data.php">Hapus Semua Data</a></li>
+            </ul> -->
         </nav>
         <div id="main-content"></div>
-    </div>
+    </div> 
     <script>
         function setActiveMenu(page) {
             document.querySelectorAll('nav a').forEach(link => {

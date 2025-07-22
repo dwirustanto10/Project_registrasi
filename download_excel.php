@@ -58,7 +58,7 @@ $sql = "SELECT
             END
         , '-', ''), ' ', '') AS 'Nomor Telepon',
     rm_hp AS 'No HP',
-    rm_email AS 'Email',
+    TRIM(rm_email) AS 'Email',
     rm_terima_kps AS 'Terima KPS',
     rm_no_kps AS 'No KPS',
     rm_nik_ayah AS 'NIK Ayah',
@@ -101,7 +101,11 @@ $sql = "SELECT
     CASE 
         WHEN UPPER(TRIM(kewarganegaraan)) <> 'wni' THEN 'silakan cek kewarganegaraan'
         ELSE ''
-    END AS 'Catatan Kewarganegaraan'
+    END AS 'Catatan Kewarganegaraan',
+    CASE 
+        WHEN TRIM(rm_email) IS NULL OR TRIM(rm_email) = '' OR TRIM(rm_email) NOT LIKE '%@%' THEN 'silakan cek email'
+        ELSE ''
+    END AS 'Catatan Email'
 FROM reg
 LEFT JOIN agama ON reg.rm_agama = agama.nama_agama
 LEFT JOIN jalur_daftar ON reg.rm_jalur = jalur_daftar.jalur_masuk
@@ -130,7 +134,9 @@ $sheet->setTitle('Data Mahasiswa');
 // Ambil header dari hasil query
 if ($result && $result->num_rows > 0) {
     $headers = array_keys($result->fetch_assoc());
-    
+    // Cari index kolom NIK Ayah dan NIK Ibu
+    $nik_ayah_idx = array_search('NIK Ayah', $headers);
+    $nik_ibu_idx = array_search('NIK Ibu', $headers);
     // Tulis header ke Excel
     $col = 'A';
     foreach ($headers as $header) {
@@ -143,28 +149,35 @@ if ($result && $result->num_rows > 0) {
     
     // Set format text untuk kolom NIK (F) dan kolom AC dengan format yang lebih kuat
     $sheet->getStyle('F:F')->getNumberFormat()->setFormatCode('@');
-    $sheet->getStyle('AC:AC')->getNumberFormat()->setFormatCode('@');
-    $sheet->getStyle('AI:AI')->getNumberFormat()->setFormatCode('@');
+    $sheet->getStyle('AD:AD')->getNumberFormat()->setFormatCode('@');
+    $sheet->getStyle('AJ:AJ')->getNumberFormat()->setFormatCode('@');
     $sheet->getStyle('AP:AP')->getNumberFormat()->setFormatCode('@');
+    $sheet->getStyle('AG:AG')->getNumberFormat()->setFormatCode('@'); // Email
     
+    // Set format untuk kolom NIK Ayah dan NIK Ibu
+    if ($nik_ayah_idx !== false) {
+        $colLetter = getColumnLetter($nik_ayah_idx);
+        $sheet->getStyle($colLetter . ':' . $colLetter)->getNumberFormat()->setFormatCode('@');
+    }
+    if ($nik_ibu_idx !== false) {
+        $colLetter = getColumnLetter($nik_ibu_idx);
+        $sheet->getStyle($colLetter . ':' . $colLetter)->getNumberFormat()->setFormatCode('@');
+    }
+
     // Reset pointer ke awal
     $result->data_seek(0);
     
     // Tulis data ke Excel
     $row = 2;
     while ($data = $result->fetch_assoc()) {
-        $colIndex = 0;
-        foreach ($data as $value) {
+        foreach (array_values($data) as $colIndex => $value) {
             $currentCol = getColumnLetter($colIndex);
-            
-            // Khusus untuk kolom NIM (A), NIK (F), dan kolom AC (AC) - paksa sebagai text
-            if ($currentCol == 'A' || $currentCol == 'F' || $currentCol == 'AC' || $currentCol == 'AI' || $currentCol == 'AP') {
+            // Paksa kolom NIK (F), NIK Ayah, dan NIK Ibu sebagai text
+            if ($currentCol == 'F' || $colIndex == $nik_ayah_idx || $colIndex == $nik_ibu_idx) {
                 $sheet->setCellValueExplicit($currentCol . $row, $value, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
             } else {
                 $sheet->setCellValue($currentCol . $row, $value);
             }
-            
-            $colIndex++;
         }
         $row++;
     }

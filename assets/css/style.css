@@ -142,6 +142,27 @@ nav a.active {
 .table-responsive {
   overflow-x: auto;
   margin: 20px 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #888 #f1f1f1;
+}
+
+.table-responsive::-webkit-scrollbar {
+  height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 table {
@@ -346,16 +367,52 @@ tr:nth-child(even) {
   }
 
   .table-responsive {
+    font-size: 11px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  th,
+  td {
+    padding: 3px 2px;
+    font-size: 11px;
+    white-space: nowrap;
+    min-width: 60px;
+  }
+
+  .wrap-text {
+    max-width: 80px;
+    word-wrap: break-word;
+    white-space: normal;
+  }
+
+  /* Sembunyikan kolom yang tidak penting di mobile */
+  .data-table th:nth-child(n + 8),
+  .data-table td:nth-child(n + 8) {
+    display: none;
+  }
+
+  /* Tampilkan tombol toggle columns */
+  .btn-toggle-columns {
+    display: inline-block !important;
+    margin-bottom: 10px;
+  }
+}
+
+/* Tablet Responsive */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .table-responsive {
     font-size: 12px;
   }
 
   th,
   td {
-    padding: 4px;
+    padding: 6px 4px;
+    font-size: 12px;
   }
 
   .wrap-text {
-    max-width: 100px;
+    max-width: 120px;
   }
 }
 
@@ -369,10 +426,17 @@ tr:nth-child(even) {
   cursor: pointer;
   font-size: 14px;
   transition: background 0.3s;
+  display: none; /* Hidden by default, shown on mobile */
+  margin: 10px auto;
 }
 
 .btn-toggle-columns:hover {
   background: #5a6268;
+}
+
+.btn-toggle-columns:focus {
+  outline: 2px solid #007cba;
+  outline-offset: 2px;
 }
 
 /* Config Info */
@@ -392,4 +456,79 @@ tr:nth-child(even) {
 .config-info p {
   margin: 5px 0;
   color: #0056b3;
+}
+
+.upload-card {
+  max-width: 450px;
+  margin: 40px auto 0 auto;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  padding: 32px 28px 24px 28px;
+  text-align: center;
+}
+.upload-card h2 {
+  font-size: 1.5em;
+  margin-bottom: 18px;
+  font-weight: bold;
+}
+.upload-card .nav-btns {
+  margin-bottom: 18px;
+}
+.upload-card .nav-btns button,
+.upload-card .nav-btns a {
+  margin: 0 4px 8px 4px;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 1em;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+.upload-card .nav-btns .btn-danger {
+  background: #dc3545;
+  color: #fff;
+}
+.upload-card .nav-btns .btn-primary {
+  background: #007bff;
+  color: #fff;
+}
+.upload-card .nav-btns .btn-primary:hover,
+.upload-card .nav-btns .btn-danger:hover {
+  opacity: 0.85;
+}
+.upload-card input[type='file'] {
+  margin: 12px 0 18px 0;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+.upload-card .btn-upload {
+  background: #28a745;
+  color: #fff;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 6px;
+  font-size: 1.1em;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+.upload-card .btn-upload:hover {
+  background: #218838;
+}
+@media (max-width: 600px) {
+  .upload-card {
+    padding: 18px 6px 16px 6px;
+    max-width: 98vw;
+  }
+  .upload-card h2 {
+    font-size: 1.1em;
+  }
+  .upload-card .btn-upload {
+    font-size: 1em;
+    padding: 8px 10px;
+  }
 }

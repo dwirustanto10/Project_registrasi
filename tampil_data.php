@@ -51,7 +51,11 @@ $sql = "SELECT
             END
         , '-', ''), ' ', '') AS 'Nomor Telepon',
     rm_hp AS 'No HP',
-    rm_email AS 'Email',
+    TRIM(rm_email) AS 'Email',
+    CASE 
+        WHEN TRIM(rm_email) IS NULL OR TRIM(rm_email) = '' OR TRIM(rm_email) NOT LIKE '%@%' THEN 'silakan cek email'
+        ELSE ''
+    END AS 'Catatan Email',
     rm_terima_kps AS 'Terima KPS',
     rm_no_kps AS 'No KPS',
     rm_nik_ayah AS 'NIK Ayah',
@@ -141,7 +145,7 @@ $result = $conn->query($sql);
 </head>
 <body>
     <div class="container">
-        <h2>Daftar Data Mahasiswa</h2>
+    <h2>Daftar Data Mahasiswa</h2>
         
         <!-- Info Pagination -->
         <div class="pagination-info">
@@ -168,32 +172,32 @@ $result = $conn->query($sql);
         <!-- Container untuk tabel responsif -->
         <div class="table-responsive">
             <table class="data-table">
-                <thead>
-                    <tr>
-                        <?php if ($result && $result->num_rows > 0): ?>
+        <thead>
+            <tr>
+                <?php if ($result && $result->num_rows > 0): ?>
                             <?php 
                             $headers = array_keys($result->fetch_assoc());
                             foreach($headers as $col): ?>
-                                <th><?= htmlspecialchars($col) ?></th>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php 
-                    if ($result && $result->num_rows > 0) {
-                        $result->data_seek(0); // Reset pointer ke awal
-                        while($row = $result->fetch_assoc()): ?>
-                        <tr>
-                            <?php foreach($row as $cell): ?>
+                        <th><?= htmlspecialchars($col) ?></th>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tr>
+        </thead>
+        <tbody>
+            <?php 
+            if ($result && $result->num_rows > 0) {
+                $result->data_seek(0); // Reset pointer ke awal
+                while($row = $result->fetch_assoc()): ?>
+                <tr>
+                    <?php foreach($row as $cell): ?>
                                 <td class="wrap-text"><?= htmlspecialchars($cell ?? '') ?></td>
-                            <?php endforeach; ?>
-                        </tr>
-                    <?php endwhile; } else { ?>
-                        <tr><td colspan="100">Tidak ada data.</td></tr>
-                    <?php } ?>
-                </tbody>
-            </table>
+                    <?php endforeach; ?>
+                </tr>
+            <?php endwhile; } else { ?>
+                <tr><td colspan="100">Tidak ada data.</td></tr>
+            <?php } ?>
+        </tbody>
+    </table>
         </div>
         
         <!-- Pagination Navigation -->
@@ -243,14 +247,34 @@ $result = $conn->query($sql);
             const button = document.querySelector('.btn-toggle-columns');
             if (window.innerWidth <= 768) {
                 button.style.display = 'inline-block';
+                // Pastikan kolom tersembunyi di mobile
+                const table = document.querySelector('.data-table');
+                if (table) {
+                    const hiddenColumns = table.querySelectorAll('th:nth-child(n+8), td:nth-child(n+8)');
+                    hiddenColumns.forEach(col => col.style.display = 'none');
+                }
             } else {
                 button.style.display = 'none';
+                // Tampilkan semua kolom di desktop
+                const table = document.querySelector('.data-table');
+                if (table) {
+                    const hiddenColumns = table.querySelectorAll('th:nth-child(n+8), td:nth-child(n+8)');
+                    hiddenColumns.forEach(col => col.style.display = '');
+                }
             }
         }
         
         // Check saat load dan resize
         window.addEventListener('load', checkScreenSize);
         window.addEventListener('resize', checkScreenSize);
+        
+        // Tambahkan event listener untuk tombol toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const button = document.querySelector('.btn-toggle-columns');
+            if (button) {
+                button.addEventListener('click', toggleColumns);
+            }
+        });
     </script>
 </body>
 </html>
